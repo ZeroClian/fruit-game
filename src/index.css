@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #FF6B6B;
+  --primary-light: #FF8E8E;
+  --primary-dark: #E85555;
+  --secondary: #4ECDC4;
+  --accent: #FFE66D;
+  --accent-dark: #FFD93D;
+  --bg-main: #FFF5E4;
+  --bg-card: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --text-primary: #2D3436;
+  --text-secondary: #636E72;
+  --text-light: #FFFFFF;
+  --success: #00B894;
+  --warning: #FDCB6E;
+  --danger: #E17055;
+  --apple-red: #FF4757;
+  --banana-yellow: #FFC312;
+  --cherry-red: #C44569;
+  --grape-purple: #A55EEA;
+  --orange-color: #FF9F43;
+  --watermelon-green: #26DE81;
+  --kiwi-green: #20BF6B;
+  --lemon-yellow: #F7F1A3;
+  --strawberry-red: #EB3B5A;
+  --peach-pink: #FDA7DF;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.falling-fruit {
+  animation: fall linear infinite;
+}
