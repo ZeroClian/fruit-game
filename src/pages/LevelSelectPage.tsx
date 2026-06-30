@@ -45,7 +45,7 @@ export const LevelSelectPage: React.FC = () => {
 
   return (
     <GameLayout>
-      <TopBar title="关卡选择" coins={coins} lives={lives} />
+      <TopBar title="关卡选择" coins={coins} lives={lives} onBack={() => navigate('/')} />
 
       <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 space-y-2.5 sm:space-y-4">
         {bigLevels.map(bigLevel => {

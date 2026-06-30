@@ -21,12 +21,4 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'xray_card', name: '透视卡', description: '揭示隐藏水果', icon: '👁️', price: 4, category: 'consumable', maxPurchases: -1, currentPurchases: 0 },
   { id: 'shield_card', name: '护盾卡', description: '免疫1次毒果', icon: '🛡️', price: 8, category: 'consumable', maxPurchases: -1, currentPurchases: 0 },
   { id: 'precision_card', name: '精准卡', description: '本次选择必出高分', icon: '🎯', price: 5, category: 'consumable', maxPurchases: -1, currentPurchases: 0 },
-
-  // Unlocks
-  { id: 'unlock_grape', name: '解锁葡萄', description: '提前解锁葡萄', icon: '🍇', price: 10, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
-  { id: 'unlock_orange', name: '解锁橙子', description: '提前解锁橙子', icon: '🍊', price: 15, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
-  { id: 'unlock_watermelon', name: '解锁西瓜', description: '提前解锁西瓜', icon: '🍉', price: 20, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
-  { id: 'unlock_kiwi', name: '解锁猕猴桃', description: '提前解锁猕猴桃', icon: '🥝', price: 18, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
-  { id: 'unlock_strawberry', name: '解锁草莓', description: '提前解锁草莓', icon: '🍓', price: 15, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
-  { id: 'unlock_peach', name: '解锁桃子', description: '提前解锁桃子', icon: '🍑', price: 20, category: 'unlock', maxPurchases: 1, currentPurchases: 0 },
 ];

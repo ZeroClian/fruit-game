@@ -4,7 +4,7 @@ export interface ShopItem {
   description: string;
   icon: string;
   price: number;
-  category: 'permanent' | 'probability' | 'consumable' | 'unlock';
+  category: 'permanent' | 'probability' | 'consumable';
   maxPurchases: number;
   currentPurchases: number;
 }

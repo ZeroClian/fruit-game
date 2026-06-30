@@ -47,6 +47,25 @@ export function calculateAreaScore(
   return result.totalScore;
 }
 
+export interface FruitContribution {
+  icon: string;
+  name: string;
+  value: number;
+}
+
+export interface ScorePreviewResult {
+  baseScore: number;
+  addMultiplier: number;
+  subMultiplier: number;
+  mulMultiplier: number;
+  finalMultiplier: number;
+  totalScore: number;
+  baseBreakdown: FruitContribution[];
+  addBreakdown: FruitContribution[];
+  mulBreakdown: FruitContribution[];
+  subBreakdown: FruitContribution[];
+}
+
 /**
  * 计算分数并返回详细分解，用于预览显示
  *
@@ -60,19 +79,35 @@ export function calculatePreviewScore(
   fruits: string[][],
   upgrades: Record<string, number>,
   reverseMultiplier: boolean = false
-): {
-  baseScore: number;
-  addMultiplier: number;
-  mulMultiplier: number;
-  finalMultiplier: number;
-  totalScore: number;
-} {
+): ScorePreviewResult {
   let baseScore = 0;
   let addMultiplier = 0;
+  let subMultiplier = 0;
   let mulMultiplier = 1;
   let hasPoison = false;
   let hasDouble = false;
   let hasRandom = false;
+
+  // Track per-fruit contributions
+  const baseMap = new Map<string, { icon: string; name: string; value: number }>();
+  const addMap = new Map<string, { icon: string; name: string; value: number }>();
+  const mulMap = new Map<string, { icon: string; name: string; value: number }>();
+  const subMap = new Map<string, { icon: string; name: string; value: number }>();
+
+  const addToMap = (
+    map: Map<string, { icon: string; name: string; value: number }>,
+    pureType: string,
+    enhancedValue: number
+  ) => {
+    const config = FRUIT_CONFIGS[pureType];
+    if (!config) return;
+    const existing = map.get(pureType);
+    if (existing) {
+      existing.value += enhancedValue;
+    } else {
+      map.set(pureType, { icon: config.icon, name: config.name, value: enhancedValue });
+    }
+  };
 
   for (const row of fruits) {
     for (const cell of row) {
@@ -97,9 +132,11 @@ export function calculatePreviewScore(
       switch (effectType) {
         case FruitEffectType.SCORE_ADD:
           baseScore += enhancedValue;
+          addToMap(baseMap, pureType, enhancedValue);
           break;
         case FruitEffectType.MULTIPLIER_ADD:
           addMultiplier += enhancedValue;
+          addToMap(addMap, pureType, enhancedValue);
           break;
         case FruitEffectType.MULTIPLIER_MUL:
           if (reverseMultiplier) {
@@ -110,9 +147,11 @@ export function calculatePreviewScore(
           } else {
             mulMultiplier *= enhancedValue;
           }
+          addToMap(mulMap, pureType, enhancedValue);
           break;
         case FruitEffectType.MULTIPLIER_SUB:
-          addMultiplier -= enhancedValue;
+          subMultiplier += enhancedValue;
+          addToMap(subMap, pureType, enhancedValue);
           break;
         case FruitEffectType.POISON:
           hasPoison = true;
@@ -132,17 +171,19 @@ export function calculatePreviewScore(
     return {
       baseScore: 0,
       addMultiplier: 0,
+      subMultiplier: 0,
       mulMultiplier: 0,
       finalMultiplier: 0,
       totalScore: 0,
+      baseBreakdown: [],
+      addBreakdown: [],
+      mulBreakdown: [],
+      subBreakdown: [],
     };
   }
 
-  // addMultiplier 不能低于 0
-  addMultiplier = Math.max(0, addMultiplier);
-
-  // finalMultiplier = (1 + addMultiplier) × mulMultiplier
-  const finalMultiplier = (1 + addMultiplier) * mulMultiplier;
+  // 最终倍率 = (加法倍率 - 减法倍率) × 乘法倍率
+  const finalMultiplier = (addMultiplier - subMultiplier) * mulMultiplier;
 
   // score = baseScore × finalMultiplier
   let score = baseScore * finalMultiplier;
@@ -160,8 +201,13 @@ export function calculatePreviewScore(
   return {
     baseScore,
     addMultiplier,
+    subMultiplier,
     mulMultiplier,
     finalMultiplier,
     totalScore: Math.round(score),
+    baseBreakdown: Array.from(baseMap.values()),
+    addBreakdown: Array.from(addMap.values()),
+    mulBreakdown: Array.from(mulMap.values()),
+    subBreakdown: Array.from(subMap.values()),
   };
 }

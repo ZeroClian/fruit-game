@@ -33,7 +33,7 @@ const AVAILABLE_FRUITS_BY_BIG_LEVEL: Record<number, FruitType[]> = {
 
 // Probability distributions per big level
 // Score type ~55%, multiplier type ~25%, special type ~20%
-const PROBABILITIES_BY_BIG_LEVEL: Record<number, Record<string, number>> = {
+export const PROBABILITIES_BY_BIG_LEVEL: Record<number, Record<string, number>> = {
   1: {
     apple: 0.55,
     banana: 0.20,
