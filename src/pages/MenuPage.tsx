@@ -76,6 +76,9 @@ export const MenuPage: React.FC = () => {
               📂 继续游戏
             </Button>
           )}
+          <Button variant="secondary" size="lg" onClick={() => navigate('/rules')} className="!bg-[#20BF6B] hover:!bg-[#1aa85c]">
+            📖 游戏规则
+          </Button>
           <Button variant="secondary" size="lg" onClick={() => navigate('/settings')}>
             ⚙️ 设置
           </Button>

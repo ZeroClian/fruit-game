@@ -42,12 +42,19 @@ export const GamePage: React.FC = () => {
     activeRestrictions,
     permanentUpgrades,
     levelWon,
+    consumables,
+    shieldActive,
+    precisionActive,
     startLevel,
     moveSelection,
     confirmSelection,
     nextLevel,
     retryLevel,
   } = useGameStore();
+
+  const applyConsumable = useCallback((itemId: string) => {
+    useGameStore.getState().useConsumable(itemId);
+  }, []);
 
   // Timer for TIMER restriction
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -232,6 +239,41 @@ export const GamePage: React.FC = () => {
             onConfirm={handleConfirm}
             canConfirm={canConfirm}
           />
+        )}
+
+        {/* Consumable items toolbar */}
+        {gameState === 'playing' && (
+          <div className="flex flex-wrap gap-2 justify-center">
+            {[
+              { id: 'life_potion' as const, icon: '🧪', label: '生命' },
+              { id: 'reroll_card' as const, icon: '🃏', label: '重抽' },
+              { id: 'xray_card' as const, icon: '👁️', label: '透视' },
+              { id: 'shield_card' as const, icon: '🛡️', label: '护盾' },
+              { id: 'precision_card' as const, icon: '🎯', label: '精准' },
+            ].map(item => {
+              const count = consumables[item.id] ?? 0;
+              const isActive = (item.id === 'shield_card' && shieldActive) || (item.id === 'precision_card' && precisionActive);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => applyConsumable(item.id)}
+                  disabled={count <= 0 || isActive}
+                  className={`
+                    flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-xs font-bold transition-all
+                    ${isActive
+                      ? 'bg-[var(--accent)] text-[var(--text-primary)] ring-2 ring-[var(--accent-dark)]'
+                      : count > 0
+                        ? 'bg-[var(--bg-card)] shadow-sm cursor-pointer active:scale-95 hover:shadow-md'
+                        : 'bg-gray-200 opacity-40 cursor-not-allowed'}
+                  `}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
+                  <span className="text-[10px] text-[var(--text-secondary)]">×{count}</span>
+                </button>
+              );
+            })}
+          </div>
         )}
 
         {/* Score preview */}

@@ -61,6 +61,10 @@ interface GameStore {
   // Timer for TIMER restriction
   selectionTimer: number | null;
 
+  // Consumable flags
+  shieldActive: boolean;
+  precisionActive: boolean;
+
   // Level result
   levelWon: boolean | null;
 
@@ -76,6 +80,8 @@ interface GameStore {
   setGameState: (state: GameStore['gameState']) => void;
   nextLevel: () => void;
   retryLevel: () => void;
+  rerollMatrix: () => void;
+  revealHiddenCells: () => void;
 }
 
 const MATRIX_SIZE = getMatrixSize();
@@ -252,6 +258,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   highScores: initialHighScores,
 
   selectionTimer: null,
+  shieldActive: false,
+  precisionActive: false,
   levelWon: null,
 
   startLevel: (levelNumber: number) => {
@@ -285,6 +293,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       blindMode: blind,
       extraGoal,
       selectionTimer: null,
+      shieldActive: false,
+      precisionActive: false,
       levelWon: null,
     });
   },
@@ -311,6 +321,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       activeRestrictions,
       totalScore,
       targetScore,
+      shieldActive,
+      precisionActive,
     } = get();
 
     if (!currentSelection || remainingSelections <= 0) return;
@@ -352,8 +364,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     if (blocked) return;
 
+    // Shield: remove poison fruits from score calculation
+    const hasPoison = fruits.some(row => row.some(f => f === FruitType.POISON));
+    const fruitsForScore = (shieldActive && hasPoison)
+      ? fruits.map(row => row.map(f => f === FruitType.POISON ? FruitType.APPLE : f))
+      : fruits;
+
     const hasReverse = activeRestrictions.some(r => r.id === 'REVERSE');
-    const score = calculateScore(fruits, permanentUpgrades, hasReverse);
+    let score = calculateScore(fruitsForScore, permanentUpgrades, hasReverse);
+
+    // Precision: double the score
+    if (precisionActive) {
+      score *= 2;
+    }
 
     const newArea: SelectedArea = {
       row,
@@ -383,6 +406,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       usedCells: newUsedCells,
       currentSelection: null,
       matrix: newMatrix,
+      shieldActive: shieldActive && !hasPoison ? true : false,
+      precisionActive: false,
     });
 
     // Auto-end level if won or no more selections
@@ -499,15 +524,55 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   useConsumable: (itemId: string) => {
-    const { consumables } = get();
+    const { consumables, lives } = get();
     const count = consumables[itemId] ?? 0;
     if (count <= 0) return;
 
+    const newConsumables = {
+      ...consumables,
+      [itemId]: count - 1,
+    };
+
+    switch (itemId) {
+      case 'life_potion':
+        set({ consumables: newConsumables, lives: lives + 1 });
+        break;
+      case 'shield_card':
+        set({ consumables: newConsumables, shieldActive: true });
+        break;
+      case 'precision_card':
+        set({ consumables: newConsumables, precisionActive: true });
+        break;
+      case 'reroll_card':
+        get().rerollMatrix();
+        set({ consumables: newConsumables });
+        break;
+      case 'xray_card':
+        get().revealHiddenCells();
+        set({ consumables: newConsumables });
+        break;
+      default:
+        set({ consumables: newConsumables });
+    }
+
+    doSave(get());
+  },
+
+  rerollMatrix: () => {
+    const { currentLevel, usedCells } = get();
+    const levelConfig = getLevelConfig(currentLevel);
+    const newMatrix = generateMatrix(levelConfig);
+    // Keep used cells marked
+    const finalMatrix = newMatrix.map((row, r) =>
+      row.map((cell, c) => usedCells[r]?.[c] ? newMatrix[r][c] : cell)
+    );
+    set({ matrix: finalMatrix });
+  },
+
+  revealHiddenCells: () => {
     set({
-      consumables: {
-        ...consumables,
-        [itemId]: count - 1,
-      },
+      hiddenCells: createEmptyBooleanGrid(MATRIX_SIZE),
+      blindMode: false,
     });
   },
 
@@ -541,6 +606,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       completedLevels: [],
       highScores: {},
       selectionTimer: null,
+      shieldActive: false,
+      precisionActive: false,
       levelWon: null,
     });
   },
