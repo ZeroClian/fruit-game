@@ -19,7 +19,13 @@ export function useResponsive() {
   const isDesktop = windowSize.width >= 1024;
 
   // Cell size based on screen width (optimized for 10x10 matrix)
-  const cellSize = isMobile ? 24 : isTablet ? 30 : 36;
+  // Mobile: dynamically size so the matrix aligns with the ScoreBoard card width
+  // (container has p-4 = 32px padding, matrix has 9 gaps of 4px = 36px)
+  const cellSize = isMobile
+    ? Math.min(32, Math.max(22, Math.floor((windowSize.width - 32 - 36) / 10)))
+    : isTablet
+      ? 30
+      : 36;
 
   return { ...windowSize, isMobile, isTablet, isDesktop, cellSize };
 }
